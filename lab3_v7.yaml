@@ -1,0 +1,366 @@
+openapi: 3.0.1
+info:
+  title: Audience reservation
+  description: This is service for audience reservatio
+  version: 1.0.0
+servers:
+  - url: 'https://localhost:8080'
+tags:
+  - name: user
+    description: Everything about user
+  - name: audience
+    description: Access to Petstore orders
+  - name: reservation
+    description: reserve the audience
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user
+      operationId: createUser
+      requestBody:
+        $ref: '#/components/requestBodies/UserData'
+      responses:
+        '200':
+          description: successful operation
+        '405':
+          description: Invalid input
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Logs users into system
+      operationId: loginUser
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK! Logged in
+        '404':
+          description: Invalid username/password supplied
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      operationId: logoutUser
+      responses:
+        default:
+          description: successful operation
+  '/users/{userId}':
+    get:
+      tags:
+        - user
+      summary: Get user by user name
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be fetched.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - user
+      summary: Updated user
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          description: name that need to be updated
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Invalid user supplied
+        '404':
+          description: User not found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Updated user object
+        required: true
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Invalid userId supplied
+        '404':
+          description: User not found
+      security:
+        - bearerAuth: []
+  /audiences:
+    post:
+      tags:
+        - audience
+      summary: new audience
+      operationId: createAudience
+      requestBody:
+        $ref: '#/components/requestBodies/AudienceData'
+      responses:
+        '200':
+          description: successful operation
+        '405':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - audience
+      summary: get all audiences of authorized user
+      operationId: getAudience
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Audience'
+        '404':
+          description: Audience not found
+      security:
+        - bearerAuth: []
+  '/audiences/{audienceId}':
+    get:
+      tags:
+        - audience
+      summary: get audience by id
+      operationId: getAudienceId
+      parameters:
+        - name: audienceId
+          in: path
+          description: id of audience
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Audience'
+        '400':
+          description: Invalid audience id supplied
+        '404':
+          description: audience by not found
+      security:
+        - bearerAuth: []
+  /reservation:
+    post:
+      tags:
+        - reservation
+      summary: reserve the audience
+      operationId: reserveAudience
+      requestBody:
+        $ref: '#/components/requestBodies/ReservationData'
+      responses:
+        '200':
+          description: successful operation
+        '405':
+          description: Invalid input
+      security:
+        - bearerAuth: []
+  '/reservations/{reservationId}':
+    parameters:
+      - name: reservationId
+        in: path
+        description: id of reservation
+        required: true
+        schema:
+          type: integer
+    put:
+      tags:
+        - reservation
+      summary: change reservation of audience
+      operationId: changeReservation
+      requestBody:
+        $ref: '#/components/requestBodies/ReservationData'
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid reservation id supplied
+        '404':
+          description: reservation not found
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - reservation
+      summary: Delete reservation
+      operationId: deleteReservation
+      responses:
+        '400':
+          description: Invalid reservation id supplied
+        '404':
+          description: reservation not found
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: integer
+        firstName:
+          type: string
+          format: string
+        lastName:
+          type: string
+          format: string
+        userName:
+          type: string
+          format: string
+        password:
+          type: string
+          format: string
+        reservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+    Audience:
+      type: object
+      properties:
+        audienceId:
+          type: integer
+          format: integer
+        location:
+          type: string
+          format: string
+        size:
+          type: integer
+          format: integer
+        capacity:
+          type: integer
+          format: integer
+        reservation:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+    Reservation:
+      type: object
+      properties:
+        reservationId:
+          type: integer
+          format: integer
+        toDate:
+          type: string
+          format: string
+        fromDate:
+          type: string
+          format: string
+        userId:
+          type: integer
+          format: integer
+        audienceId:
+          type: integer
+          format: integer
+  requestBodies:
+    UserData:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+                format: string
+              lastName:
+                type: string
+                format: string
+              userName:
+                type: string
+                format: string
+              password:
+                type: string
+                format: string
+    AudienceData:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              location:
+                type: string
+                format: string
+              size:
+                type: integer
+                format: integer
+              capacity:
+                type: integer
+                format: integer
+              reservation:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+    ReservationData:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              toDate:
+                type: string
+                format: string
+              fromDate:
+                type: string
+                format: string
+              userId:
+                type: integer
+                format: integer
+              audienceId:
+                type: integer
+                format: integer
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
