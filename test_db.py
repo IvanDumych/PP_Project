@@ -12,6 +12,14 @@ user = User(
     password='qwerty'
 )
 
+user2 = User(
+    id=2,
+    first_name='Vitalik2',
+    second_name='Shkliarov2',
+    user_name='Rumaru001',
+    password='qwerty'
+)
+
 audience = Audience(
     id=1,
     location='Lviv',
@@ -28,6 +36,7 @@ reservation = Reservation(
 )
 
 session.add(user)
+session.add(user2)
 session.add(audience)
 session.add(reservation)
 
