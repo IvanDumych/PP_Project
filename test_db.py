@@ -6,10 +6,10 @@ session = Session()
 
 user = User(
     id=1,
-    first_name='Vitalik',
-    second_name='Shkliarov',
-    user_name='Rumaru001',
-    password='qwerty'
+    first_name='Vitalikfc',
+    second_name='Shkliarovfc',
+    user_name='Rumaru00fc',
+    password='qwertyfc'
 )
 
 user2 = User(
@@ -35,10 +35,11 @@ reservation = Reservation(
     audience_r=audience
 )
 
+user = session.query(User).filter_by(id=1).one()
+
+user.user_name = "Alex"
+
 session.add(user)
-session.add(user2)
-session.add(audience)
-session.add(reservation)
 
 session.commit()
 session.close()

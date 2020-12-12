@@ -1,9 +1,16 @@
-from pp_project import engine
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from pp_project import engine
+from flask_bcrypt import generate_password_hash, check_password_hash
 
+db_session = scoped_session(sessionmaker(autocommit=False,
+                                         autoflush=False,
+                                         bind=engine))
 Base = declarative_base()
+Base.query = db_session.query_property()
 
 
 class User(Base):
@@ -15,6 +22,12 @@ class User(Base):
     password = Column(String, nullable=False)
 
     reservations = relationship("Reservation")
+
+    def hash_password(self):
+        self.password = generate_password_hash(self.password).decode('utf8')
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
     def __repr__(self):
         return f'<User(first_name="{self.first_name}", ' \
@@ -57,6 +70,5 @@ class Reservation(Base):
     def __repr__(self):
         return f'<Reservation(from_date="{self.from_date}", ' \
                f'to_date="{self.to_date}")>'
-
 
 # Base.metadata.create_all(engine)
