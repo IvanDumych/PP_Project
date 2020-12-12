@@ -1,10 +1,15 @@
 from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from flask_bcrypt import Bcrypt
 
+# init app
 app = Flask(__name__)
-engine = create_engine('sqlite:///database.db', echo=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+
+# Database
+engine = create_engine('sqlite:///test.db', echo=True)
 Session = sessionmaker(bind=engine)
 
-from pp_project import hello_world
-# from pp_project import models
+# bcrypt
+bcrypt = Bcrypt(app)
