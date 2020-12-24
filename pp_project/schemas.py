@@ -12,3 +12,8 @@ class AudienceSchema(Schema):
     class Meta:
         model = Audience
         fields = ("id", "location", "size", "capacity")
+
+class ReservationSchema(Schema):
+    class Meta:
+        model = Reservation
+        fields = ("id", "from_date", "to_date", "user_id", "audience_id")

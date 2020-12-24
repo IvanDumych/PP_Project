@@ -79,6 +79,17 @@ bcrypt = "*"
 Flask = "*"
 
 [[package]]
+name = "flask-httpauth"
+version = "4.2.0"
+description = "Basic and Digest HTTP authentication for Flask routes"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+Flask = "*"
+
+[[package]]
 name = "itsdangerous"
 version = "1.1.0"
 description = "Various helpers to pass data to untrusted environments and back."
@@ -219,7 +230,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "2db4a14fc8d0a17aa4172fa4f562c9edd9d01cab17265204745ccb09a7f035ab"
+content-hash = "cbe56498e4b0ac1cc398b3136ff3e81259c99107f8ed966ee342a2886573cf38"
 
 [metadata.files]
 alembic = [
@@ -283,6 +294,10 @@ flask = [
 ]
 flask-bcrypt = [
     {file = "Flask-Bcrypt-0.7.1.tar.gz", hash = "sha256:d71c8585b2ee1c62024392ebdbc447438564e2c8c02b4e57b56a4cafd8d13c5f"},
+]
+flask-httpauth = [
+    {file = "Flask-HTTPAuth-4.2.0.tar.gz", hash = "sha256:8c7e49e53ce7dc14e66fe39b9334e4b7ceb8d0b99a6ba1c3562bb528ef9da84a"},
+    {file = "Flask_HTTPAuth-4.2.0-py2.py3-none-any.whl", hash = "sha256:3fcedb99a03985915335a38c35bfee6765cbd66d7f46440fa3b42ae94a90fac7"},
 ]
 itsdangerous = [
     {file = "itsdangerous-1.1.0-py2.py3-none-any.whl", hash = "sha256:b12271b2047cb23eeb98c8b5622e2e5c5e9abd9784a153e9d8ef9cb4dd09d749"},

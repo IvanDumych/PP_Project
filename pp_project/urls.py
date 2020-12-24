@@ -1,8 +1,8 @@
 from os import abort
-
 from flask import Flask, request, jsonify, abort
-from pp_project import app, Session
-from schemas import UserSchema, AudienceSchema
+from flask.globals import session
+from pp_project import app, Session, auth, bcrypt
+from pp_project.schemas import ReservationSchema, UserSchema, AudienceSchema
 from pp_project.models import User, Audience, Reservation
 from datetime import datetime
 
@@ -17,10 +17,34 @@ def get():
 schema = UserSchema()
 
 
+def auth_check(user_id, user_name):
+    session = Session()
+    try:
+        user = session.query(User).filter_by(user_name=user_name).one()
+    except:
+        abort(404, description="User not found")
+
+    if int(user_id) != user.id:
+        abort(403, description="Access forbiden")
+
+@auth.verify_password
+def verify_password(username, password):
+    session = Session()
+    try:
+        user = session.query(User).filter_by(user_name=username).one()
+    except:
+        abort(404, description="User not found")
+    
+    return bcrypt.check_password_hash(user.password, password)
+
 # validation
 @app.errorhandler(404)
 def not_found(e):
     return jsonify(error=str(e)), 404
+
+@app.errorhandler(404)
+def forbiden(e):
+    return jsonify(error=str(e)), 403
 
 
 @app.errorhandler(405)
@@ -40,8 +64,14 @@ def compare_dates(date1, date2):
 
 # users
 @app.route('/user/<int:user_id>/', methods=['GET'])
+@auth.login_required
 def get_user(user_id):
     session = Session()
+
+    print(auth.current_user())
+
+    auth_check(user_id,auth.current_user())
+
     try:
         user = session.query(User).filter_by(id=int(user_id)).one()
     except:
@@ -69,7 +99,11 @@ def create_user():
 
 
 @app.route('/user/<int:user_id>/', methods=['PUT'])
+@auth.login_required
 def update_user(user_id):
+
+    auth_check(user_id,auth.current_user())
+
     session = Session()
     try:
         user = session.query(User).filter_by(id=int(user_id)).one()
@@ -99,8 +133,12 @@ def update_user(user_id):
 
 
 @app.route('/user/<int:user_id>/', methods=['DELETE'])
+@auth.login_required
 def delete_user(user_id):
     session = Session()
+
+    auth_check(user_id,auth.current_user())
+
     try:
         user = session.query(User).filter_by(id=int(user_id)).one()
     except:
@@ -122,6 +160,7 @@ def delete_user(user_id):
 
 # audiences
 @app.route('/audience/', methods=['POST'])
+@auth.login_required
 def create_audience():
     session = Session()
 
@@ -142,6 +181,7 @@ def create_audience():
 
 
 @app.route('/audience/<int:audience_id>/', methods=['GET'])
+@auth.login_required
 def get_audience(audience_id):
     session = Session()
     try:
@@ -153,6 +193,7 @@ def get_audience(audience_id):
 
 
 @app.route('/audience/', methods=['GET'])
+@auth.login_required
 def get_all_audience():
     session = Session()
     try:
@@ -165,7 +206,22 @@ def get_all_audience():
 
 
 # reservations
+@app.route('/reservation/', methods=['GET'])
+def get_reservation():
+    session = Session()
+
+    try:
+        reservations = session.query(Reservation).all()
+    except:
+        reservations = []
+
+    result = ReservationSchema(many=True).dump(reservations)
+
+    return jsonify(result)
+
+
 @app.route('/reservation/', methods=['POST'])
+@auth.login_required
 def create_reservation():
     session = Session()
 
@@ -210,12 +266,16 @@ def create_reservation():
 
 
 @app.route('/reservation/<int:reservation_id>/', methods=['PUT'])
+@auth.login_required
 def update_reservation(reservation_id):
     session = Session()
     try:
         reservation = session.query(Reservation).filter_by(id=int(reservation_id)).one()
     except:
         abort(404, description="Reservation not found")
+
+    auth_check(reservation.user_id,auth.current_user())
+
     data = request.get_json()
     try:
         if data.get('from_date', None):
@@ -255,12 +315,15 @@ def update_reservation(reservation_id):
 
 
 @app.route('/reservation/<int:reservation_id>/', methods=['DELETE'])
+@auth.login_required
 def delete_reservation(reservation_id):
     session = Session()
     try:
         reservation = session.query(Reservation).filter_by(id=int(reservation_id)).one()
     except:
         abort(404, description="Reservation not found")
+
+    auth_check(reservation.user_id, auth.current_user())
 
     session.delete(reservation)
     session.commit()
