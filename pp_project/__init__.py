@@ -12,7 +12,7 @@ app.config.from_object('config.TestingConfig')
 auth = HTTPBasicAuth()
 
 # Database
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=app.config['SQLALCHEMY_ECHO'])
 Session = sessionmaker(bind=engine)
 
 # bcrypt

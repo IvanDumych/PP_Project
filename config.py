@@ -8,6 +8,7 @@ class Config:
     TESTING = False
     CSRF_ENABLED = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
+    SQLALCHEMY_ECHO =True
 
 
 class ProductionConfig(Config):
@@ -22,3 +23,4 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///unittest.db'
     TESTING = True
+    SQLALCHEMY_ECHO = False
