@@ -71,4 +71,6 @@ class Reservation(Base):
         return f'<Reservation(from_date="{self.from_date}", ' \
                f'to_date="{self.to_date}")>'
 
+
+# Base.metadata.drop_all(engine)
 # Base.metadata.create_all(engine)

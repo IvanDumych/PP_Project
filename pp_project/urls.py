@@ -19,13 +19,12 @@ schema = UserSchema()
 
 def auth_check(user_id, user_name):
     session = Session()
-    try:
-        user = session.query(User).filter_by(user_name=user_name).one()
-    except:
-        abort(404, description="User not found")
+
+    user = session.query(User).filter_by(user_name=user_name).one()
 
     if int(user_id) != user.id:
         abort(403, description="Access forbiden")
+
 
 @auth.verify_password
 def verify_password(username, password):
@@ -34,13 +33,12 @@ def verify_password(username, password):
         user = session.query(User).filter_by(user_name=username).one()
     except:
         abort(404, description="User not found")
-    
+
     return bcrypt.check_password_hash(user.password, password)
 
+
 # validation
-@app.errorhandler(404)
-def not_found(e):
-    return jsonify(error=str(e)), 404
+
 
 @app.errorhandler(404)
 def forbiden(e):
@@ -70,12 +68,10 @@ def get_user(user_id):
 
     print(auth.current_user())
 
-    auth_check(user_id,auth.current_user())
+    auth_check(user_id, auth.current_user())
 
-    try:
-        user = session.query(User).filter_by(id=int(user_id)).one()
-    except:
-        abort(404, description="User not found")
+    user = session.query(User).filter_by(id=int(user_id)).one()
+
     return UserSchema().dump(user)
 
 
@@ -101,31 +97,23 @@ def create_user():
 @app.route('/user/<int:user_id>/', methods=['PUT'])
 @auth.login_required
 def update_user(user_id):
-
-    auth_check(user_id,auth.current_user())
+    auth_check(user_id, auth.current_user())
 
     session = Session()
-    try:
-        user = session.query(User).filter_by(id=int(user_id)).one()
-    except:
-        abort(404, description="User not found")
+
+    user = session.query(User).filter_by(id=int(user_id)).one()
 
     data = request.get_json()
-    try:
-        if data.get('first_name', None):
-            user.first_name = data['first_name']
-        if data.get('second_name', None):
-            user.second_name = data['second_name']
-        if data.get('user_name', None):
-            user.user_name = data['user_name']
-        if data.get('password', None):
-            user.password = data['password']
-            user.hash_password()
 
-    except:
-        abort(405, description="Invalid input")
-
-        # return jsonify({"Message": "Invalid input"}), 405
+    if data.get('first_name', None):
+        user.first_name = data['first_name']
+    if data.get('second_name', None):
+        user.second_name = data['second_name']
+    if data.get('user_name', None):
+        user.user_name = data['user_name']
+    if data.get('password', None):
+        user.password = data['password']
+        user.hash_password()
 
     session.commit()
 
@@ -137,17 +125,11 @@ def update_user(user_id):
 def delete_user(user_id):
     session = Session()
 
-    auth_check(user_id,auth.current_user())
+    auth_check(user_id, auth.current_user())
 
-    try:
-        user = session.query(User).filter_by(id=int(user_id)).one()
-    except:
-        abort(404, description="User not found")
+    user = session.query(User).filter_by(id=int(user_id)).one()
 
-    try:
-        reservations = session.query(Reservation).filter_by(user_id=int(user_id)).all()
-    except:
-        reservations = []
+    reservations = session.query(Reservation).filter_by(user_id=int(user_id)).all()
 
     session.delete(user)
     for reservation in reservations:
@@ -196,9 +178,9 @@ def get_audience(audience_id):
 @auth.login_required
 def get_all_audience():
     session = Session()
-    try:
-        all_audience = session.query(Audience).all()
-    except:
+
+    all_audience = session.query(Audience).all()
+    if len(all_audience) == 0:
         abort(404, description="Audiences not found")
 
     result = audience_schema.dump(all_audience)
@@ -210,10 +192,7 @@ def get_all_audience():
 def get_reservation():
     session = Session()
 
-    try:
-        reservations = session.query(Reservation).all()
-    except:
-        reservations = []
+    reservations = session.query(Reservation).all()
 
     result = ReservationSchema(many=True).dump(reservations)
 
@@ -228,7 +207,7 @@ def create_reservation():
     data = request.get_json()
     try:
         user = session.query(User).filter_by(id=int(data.pop('user_id'))).one()
-    except:
+    except Exception:
         abort(404, description="User not found")
 
     try:
@@ -244,20 +223,14 @@ def create_reservation():
 
     compare_dates(data['from_date'], data['to_date'])
 
-    try:
-        reservations = session.query(Reservation).filter_by(audience_id=int(audience.id)).all()
-    except:
-        reservations = []
+    reservations = session.query(Reservation).filter_by(audience_id=int(audience.id)).all()
 
     for reserv_other in reservations:
         check_dates(data['from_date'], reserv_other.from_date, reserv_other.to_date)
         check_dates(data['to_date'], reserv_other.from_date, reserv_other.to_date)
 
-    try:
-        reservation = Reservation(**data, user_r=user,
-                                  audience_r=audience)
-    except:
-        return jsonify({"Message": "Invalid input"}), 405
+    reservation = Reservation(**data, user_r=user,
+                              audience_r=audience)
 
     session.add(reservation)
     session.commit()
@@ -274,7 +247,7 @@ def update_reservation(reservation_id):
     except:
         abort(404, description="Reservation not found")
 
-    auth_check(reservation.user_id,auth.current_user())
+    auth_check(reservation.user_id, auth.current_user())
 
     data = request.get_json()
     try:
@@ -299,10 +272,7 @@ def update_reservation(reservation_id):
     except:
         abort(404, description="Audience not found")
 
-    try:
-        reservations = session.query(Reservation).filter_by(audience_id=int(audience.id)).all()
-    except:
-        reservations = []
+    reservations = session.query(Reservation).filter_by(audience_id=int(audience.id)).all()
 
     for reserv_other in reservations:
         if reserv_other.id != reservation.id:
@@ -320,7 +290,7 @@ def delete_reservation(reservation_id):
     session = Session()
     try:
         reservation = session.query(Reservation).filter_by(id=int(reservation_id)).one()
-    except:
+    except Exception:
         abort(404, description="Reservation not found")
 
     auth_check(reservation.user_id, auth.current_user())
@@ -329,7 +299,3 @@ def delete_reservation(reservation_id):
     session.commit()
 
     return jsonify({"Success": "Reservation has been deleted"}), 200
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
